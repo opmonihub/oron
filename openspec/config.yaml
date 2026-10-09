@@ -1,0 +1,66 @@
+schema: spec-driven
+
+# Shown to the AI when creating artifacts. Constraints, not text to copy into specs.
+context: |
+  Oron is a Laravel 12 application on the jkque/laravel-nuxt-ui-starter-kit base.
+  PHP 8.4, Vue 3, TypeScript, Inertia 2, Nuxt UI 4, Tailwind CSS 4, Vite 7.
+  Auth uses custom Inertia controllers (register, login, password reset, email verification).
+  Laravel Fortify is enabled only for two-factor authentication (confirm and confirmPassword).
+  Laravel Wayfinder generates resources/js/actions, resources/js/routes, and resources/js/wayfinder; regenerate through Vite and do not edit those files.
+  Horizon runs the database queue. Default database is SQLite. Tests use in-memory SQLite, RefreshDatabase, and frozen time.
+
+  Layout:
+  - app/: models, controllers, form requests, middleware, resources, providers
+  - routes/: web.php, auth.php, settings.php, console.php
+  - resources/js/: Inertia pages, layouts, components, composables, types; @/ aliases this directory
+  - Authenticated shell is resources/js/layouts/Default.vue; settings use SettingsLayout.vue
+
+  Persisted domain today is User only: name, email, hashed password, uuid, email verification, and Fortify two-factor columns.
+  Dashboard, inbox, customers, members, and notification preferences are Nuxt UI dashboard demo surfaces.
+  Customers loads https://dashboard-template.nuxt.dev/api/customers. Do not treat that API, or other demo page state, as the system of record unless a change explicitly persists it.
+
+  Conventions:
+  - PHP: declare(strict_types=1), explicit parameter and return types, four-space Pint Laravel preset, PascalCase classes
+  - Validate with form requests. Architecture tests forbid the Validator facade outside App\Actions\Fortify, and forbid dd, dump, and ray
+  - Vue/TypeScript: Prettier with two spaces, single quotes, no semicolons, printWidth 150; PascalCase .vue filenames; camelCase functions; useX composables
+  - Prefer Nuxt UI components. Prettier organizes imports and Tailwind classes
+  - Pest feature tests for routes, auth, and validation; unit tests for isolated logic
+  - composer test requires 100% PHP type coverage, 100% line coverage, Pint, Rector dry-run, Prettier, and PHPStan level 5
+  - Commits follow "type: concise summary" (feat, fix, chore)
+  - Secrets stay in .env; document new settings in .env.example. Do not commit build output
+
+rules:
+  proposal:
+    - "Name the routes, Inertia pages, and whether the behavior is persisted or still demo UI"
+    - "Include a Non-goals section"
+    - "Use skip_specs only when behavior does not change (refactor, tooling, docs)"
+    - "Do not invent a product domain beyond User, authentication, and settings unless this change introduces one"
+  specs:
+    - "Describe observable behavior only; each scenario must be testable in this app with Pest, not against the Nuxt dashboard template API"
+    - "Keep inbox, customers, members, and notification preferences out of requirements until a change persists them"
+    - "For a new or changed route, include scenarios for guest, unverified, and authenticated access when those states apply"
+  design:
+    - "Stay in the existing layers: form request, controller or named route closure, Inertia page, Nuxt UI"
+    - "Call routes from Vue through Wayfinder; never plan hand-edits under resources/js/actions, resources/js/routes, or resources/js/wayfinder"
+    - "Put new environment settings in .env.example"
+    - "Add a Composer or npm dependency only when Laravel, Inertia, Vue, Nuxt UI, VueUse, or Zod cannot do the job"
+    - "Model changes go through migrations; User is the only current entity"
+  tasks:
+    - "Keep each checkbox small enough for one session and include how to verify it"
+    - "Backend behavior tasks name the Pest file to add or extend"
+    - "UI tasks name the Vue page or component and require a browser pass of the changed flow"
+    - "Include a focused Pest run, and composer test when the change touches auth, middleware, or coverage-sensitive code"
+    - "Do not schedule manual edits of generated Wayfinder files"
+
+operations:
+  apply:
+    guidance:
+      - "Follow the project context: strict types, form requests, Pint, and Prettier"
+      - "Run the focused Pest file for the task; run composer test before calling a behavior change complete"
+      - "For user-visible UI, exercise the changed flow in the browser, including empty and error states the change touches"
+      - "Let Vite regenerate Wayfinder output; do not commit .env or build artifacts"
+  archive:
+    guidance:
+      - "Summarize which delta requirements are now implemented"
+      - "Copy demo-only UI into main specs only after it is persisted in this app"
+      - "Call out any requirement that landed only in the frontend"
